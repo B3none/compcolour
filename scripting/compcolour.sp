@@ -3,6 +3,8 @@
 #pragma semicolon 1
 #pragma newdecls required
 
+#define MESSAGE_PREFIX "[\x04CompColour\x01]"
+
 enum colours
 {
     GREY = -1,
@@ -29,34 +31,54 @@ public void OnPluginStart()
 
 public Action CompColour(int client, any args)
 {
-	char colour[32];
+	if (args < 1)
+	{
+		ReplyToCommand(client, "%s Usage: sm_compcolour <#userid|name> <yellow|purple|green|blue|orange|grey>", MESSAGE_PREFIX);
+		
+		return Plugin_Handled;
+	}
+	
+	char arg[MAX_NAME_LENGTH], colour[32];
 	GetCmdArg(1, colour, sizeof(colour));
 	int colour_id = GetColour(colour);
 	
-	if (strlen(colour) == 0)
+	if (!IsValidColour(colour_id))
 	{
-		PrintToConsole(client, "Please specify a colour.");
+		PrintToChat(client, "%s Invalid colour.", MESSAGE_PREFIX);
+		ReplyToCommand(client, "%s Usage: sm_compcolour <#userid|name> <yellow|purple|green|blue|orange|grey>", MESSAGE_PREFIX);
 		
 		return Plugin_Handled;
 	}
 	
-	if (IsValidClient(client))
+	char target_name[MAX_TARGET_LENGTH];
+	int target_list[MAXPLAYERS];
+	bool tn_is_ml;
+	int target_count = ProcessTargetString(arg, client, target_list, MAXPLAYERS, COMMAND_TARGET_NONE, target_name, sizeof(target_name), tn_is_ml);
+	
+	if (target_count > 0)
 	{
-		SetEntProp(client, Prop_Data, "m_iCompTeammateColor", colour_id);
+		if (target_count > 1)
+		{
+			ReplyToCommand(client, "%s Multiple players found for search term: %s", MESSAGE_PREFIX, arg);
+			
+			return Plugin_Handled;
+		}
 		
-		if (colour_id != /*GREY*/-1)
-		{
-			PrintToConsole(client, "Colour has been set to: %s", colour);
-		}
-		else
-		{
-			PrintToConsole(client, "Colour has been set to grey as a fallback.");
-		}
+		int target = target_list[0];
+		
+		SetColour(target, colour_id);
+		ReplyToCommand(client, "%s The colour for %N has been set to: %s", MESSAGE_PREFIX, target, colour);
 		
 		return Plugin_Handled;
 	}
-	
-	return Plugin_Continue;
+
+	ReplyToTargetError(client, target_count);
+	return Plugin_Handled;
+}
+
+void SetColour(int client, int colour_id)
+{
+	SetEntProp(client, Prop_Data, "m_iCompTeammateColor", colour_id);
 }
 
 int GetColour(char[] colour)
@@ -81,10 +103,19 @@ int GetColour(char[] colour)
 	{
 		return ORANGE;
 	}
-	else
+	else if (StrEqual(colour, "grey", false))
 	{
 		return GREY;
 	}
+	else
+	{
+		return -2; // Out of bounds value
+	}
+}
+
+bool IsValidColour(int colour)
+{
+	return colour >= -1 && colour <= 4;
 }
 
 bool IsValidClient(int client)
