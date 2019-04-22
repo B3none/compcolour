@@ -1,4 +1,5 @@
 #include <sourcemod>
+#include <sdktools>
 
 #pragma semicolon 1
 #pragma newdecls required
@@ -47,7 +48,7 @@ public Action CompColour(int client, any args)
 	char target_name[MAX_TARGET_LENGTH];
 	int target_list[MAXPLAYERS];
 	bool tn_is_ml;
-	int target_count = ProcessTargetString(arg, client, target_list, 1, COMMAND_TARGET_NO_MULTI, target_name, sizeof(target_name), tn_is_ml);
+	int target_count = ProcessTargetString(arg, client, target_list, 1, COMMAND_TARGET_NONE, target_name, sizeof(target_name), tn_is_ml);
 	
 	if (target_count > 0)
 	{
@@ -74,9 +75,16 @@ public Action CompColour(int client, any args)
 	return Plugin_Handled;
 }
 
-void SetColour(int client, int colour_id)
+bool SetColour(int client, int colour_id)
 {
-	SetEntProp(client, Prop_Data, "m_iCompTeammateColor", colour_id);
+	int playerManager = FindEntityByClassname(INVALID_ENT_REFERENCE, "cs_player_manager");
+	if (playerManager == INVALID_ENT_REFERENCE)
+	{
+		return false;
+	}
+	
+	SetEntProp(playerManager, Prop_Data, "m_iCompTeammateColor", colour_id, 4, client);
+	return true;
 }
 
 int GetColour(char[] colour)
