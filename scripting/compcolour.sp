@@ -26,7 +26,7 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
-	RegConsoleCmd("sm_compcolour", CompColour);
+	RegAdminCmd("sm_compcolour", CompColour, ADMFLAG_GENERIC, "sm_compcolour <#userid|name> <yellow|purple|green|blue|orange|grey>");
 }
 
 public Action CompColour(int client, any args)
