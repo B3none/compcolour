@@ -15,6 +15,8 @@ enum colours
     ORANGE = 4,
 }
 
+char usage[] = "sm_compcolour <#userid|name> <yellow|purple|green|blue|orange|grey>";
+
 public Plugin myinfo =
 {
 	name = "[CS:GO] CompColour",
@@ -26,14 +28,14 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
-	RegAdminCmd("sm_compcolour", CompColour, ADMFLAG_GENERIC, "sm_compcolour <#userid|name> <yellow|purple|green|blue|orange|grey>");
+	RegAdminCmd("sm_compcolour", CompColour, ADMFLAG_GENERIC, usage);
 }
 
 public Action CompColour(int client, any args)
 {
 	if (args < 1)
 	{
-		ReplyToCommand(client, "%s Usage: sm_compcolour <#userid|name> <yellow|purple|green|blue|orange|grey>", MESSAGE_PREFIX);
+		ReplyToCommand(client, "%s Usage: %s", MESSAGE_PREFIX, usage);
 		
 		return Plugin_Handled;
 	}
@@ -60,7 +62,7 @@ public Action CompColour(int client, any args)
 		if (!IsValidColour(colour_id))
 		{
 			PrintToChat(client, "%s Invalid colour.", MESSAGE_PREFIX);
-			ReplyToCommand(client, "%s Usage: sm_compcolour <#userid|name> <yellow|purple|green|blue|orange|grey>", MESSAGE_PREFIX);
+			ReplyToCommand(client, "%s Usage: %s", MESSAGE_PREFIX, usage);
 			
 			return Plugin_Handled;
 		}
@@ -119,7 +121,7 @@ bool IsValidColour(int colour)
 	return colour >= -1 && colour <= 4;
 }
 
-bool IsValidClient(int client)
+stock bool IsValidClient(int client)
 {
-	return client > 0 && client <= MaxClients;
+	return client > 0 && client <= MaxClients && IsClientInGame(client);
 }
