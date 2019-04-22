@@ -28,6 +28,8 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+	LoadTranslations("common.phrases");
+
 	RegAdminCmd("sm_compcolour", CompColour, ADMFLAG_GENERIC, usage);
 }
 
