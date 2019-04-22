@@ -29,9 +29,9 @@ public void OnPluginStart()
 
 public Action CompColour(int client, any args)
 {
-	int colour_id;
 	char colour[32];
 	GetCmdArg(1, colour, sizeof(colour));
+	int colour_id = GetColour(colour);
 	
 	if (strlen(colour) == 0)
 	{
@@ -39,44 +39,52 @@ public Action CompColour(int client, any args)
 		
 		return Plugin_Handled;
 	}
-	else if (StrEqual(colour, "grey", false))
-	{
-		colour_id = GREY;
-	}
-	else if (StrEqual(colour, "yellow", false))
-	{
-		colour_id = GREY;
-	}
-	else if (StrEqual(colour, "purple", false))
-	{
-		colour_id = GREY;
-	}
-	else if (StrEqual(colour, "green", false))
-	{
-		colour_id = GREY;
-	}
-	else if (StrEqual(colour, "blue", false))
-	{
-		colour_id = GREY;
-	}
-	else if (StrEqual(colour, "orange", false))
-	{
-		colour_id = GREY;
-	}
-	else
-	{
-		PrintToConsole(client, "Colour %s was not found.", colour);
-		
-		return Plugin_Handled;
-	}
 	
 	if (IsValidClient(client))
 	{
 		SetEntProp(client, Prop_Data, "m_iCompTeammateColor", colour_id);
-		PrintToConsole(client, "Colour has been set to: %s", colour);
+		
+		if (colour_id != /*GREY*/-1)
+		{
+			PrintToConsole(client, "Colour has been set to: %s", colour);
+		}
+		else
+		{
+			PrintToConsole(client, "Colour has been set to grey as a fallback.");
+		}
+		
+		return Plugin_Handled;
 	}
 	
 	return Plugin_Continue;
+}
+
+int GetColour(char[] colour)
+{
+	if (StrEqual(colour, "yellow", false))
+	{
+		return YELLOW;
+	}
+	else if (StrEqual(colour, "purple", false))
+	{
+		return PURPLE;
+	}
+	else if (StrEqual(colour, "green", false))
+	{
+		return GREEN;
+	}
+	else if (StrEqual(colour, "blue", false))
+	{
+		return BLUE;
+	}
+	else if (StrEqual(colour, "orange", false))
+	{
+		return ORANGE;
+	}
+	else
+	{
+		return GREY;
+	}
 }
 
 bool IsValidClient(int client)
