@@ -39,16 +39,6 @@ public Action CompColour(int client, any args)
 	}
 	
 	char arg[MAX_NAME_LENGTH], colour[32];
-	GetCmdArg(1, colour, sizeof(colour));
-	int colour_id = GetColour(colour);
-	
-	if (!IsValidColour(colour_id))
-	{
-		PrintToChat(client, "%s Invalid colour.", MESSAGE_PREFIX);
-		ReplyToCommand(client, "%s Usage: sm_compcolour <#userid|name> <yellow|purple|green|blue|orange|grey>", MESSAGE_PREFIX);
-		
-		return Plugin_Handled;
-	}
 	
 	char target_name[MAX_TARGET_LENGTH];
 	int target_list[MAXPLAYERS];
@@ -60,6 +50,17 @@ public Action CompColour(int client, any args)
 		if (target_count > 1)
 		{
 			ReplyToCommand(client, "%s Multiple players found for search term: %s", MESSAGE_PREFIX, arg);
+			
+			return Plugin_Handled;
+		}
+		
+		GetCmdArg(2, colour, sizeof(colour));
+		int colour_id = GetColour(colour);
+		
+		if (!IsValidColour(colour_id))
+		{
+			PrintToChat(client, "%s Invalid colour.", MESSAGE_PREFIX);
+			ReplyToCommand(client, "%s Usage: sm_compcolour <#userid|name> <yellow|purple|green|blue|orange|grey>", MESSAGE_PREFIX);
 			
 			return Plugin_Handled;
 		}
