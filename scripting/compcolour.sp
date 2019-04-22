@@ -47,7 +47,7 @@ public Action CompColour(int client, any args)
 	char target_name[MAX_TARGET_LENGTH];
 	int target_list[MAXPLAYERS];
 	bool tn_is_ml;
-	int target_count = ProcessTargetString(arg, client, target_list, MAXPLAYERS, COMMAND_TARGET_NO_MULTI, target_name, sizeof(target_name), tn_is_ml);
+	int target_count = ProcessTargetString(arg, client, target_list, 1, COMMAND_TARGET_NO_MULTI, target_name, sizeof(target_name), tn_is_ml);
 	
 	if (target_count > 0)
 	{
