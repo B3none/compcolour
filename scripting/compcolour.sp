@@ -104,7 +104,7 @@ public Action CompColour(int client, int args)
 		}
 		
 		player_colours[client] = colour_id;
-		ReplyToCommand(client, "%s The competative colour for %N has been set to: %s", MESSAGE_PREFIX, target, colour);
+		ReplyToCommand(client, "%s The competitive colour for %N has been set to: %s", MESSAGE_PREFIX, target, colour);
 	}
 	
 	return Plugin_Handled;
