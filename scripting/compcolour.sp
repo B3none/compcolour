@@ -16,6 +16,7 @@ enum colours
     BLUE = 3,
     ORANGE = 4,
 }
+
 bool loaded_player_colours = false;
 int player_colours[MAXPLAYERS + 1];
 char usage[] = "sm_compcolour <name> <yellow|purple|green|blue|orange|grey>";
@@ -102,17 +103,11 @@ public Action CompColour(int client, int args)
 			return Plugin_Handled;
 		}
 		
-		SetColour(target, colour_id);
+		player_colours[client] = colour_id;
 		ReplyToCommand(client, "%s The competative colour for %N has been set to: %s", MESSAGE_PREFIX, target, colour);
 	}
 	
 	return Plugin_Handled;
-}
-
-stock bool SetColour(int client, int colour_id)
-{
-	player_colours[client] = colour_id;
-	return true;
 }
 
 int GetColour(char[] colour)
@@ -150,9 +145,4 @@ int GetColour(char[] colour)
 bool IsValidColour(int colour)
 {
 	return colour >= -1 && colour <= 4;
-}
-
-stock bool IsValidClient(int client)
-{
-	return client > 0 && client <= MaxClients && IsClientInGame(client);
 }
