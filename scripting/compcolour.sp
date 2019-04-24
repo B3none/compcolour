@@ -31,7 +31,7 @@ public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 
-	RegAdminCmd("sm_compcolour", CompColour, ADMFLAG_GENERIC, usage);
+	RegConsoleCmd("sm_compcolour", CompColour, usage);
 }
 
 public Action CompColour(int client, any args)
@@ -46,12 +46,27 @@ public Action CompColour(int client, any args)
 	char arg[MAX_NAME_LENGTH], colour[32];
 	
 	char target_name[MAX_TARGET_LENGTH];
-	int target_list[MAXPLAYERS];
+	int target_list[MAXPLAYERS], target_count;
 	bool tn_is_ml;
-	int target_count = ProcessTargetString(arg, client, target_list, 1, COMMAND_TARGET_NONE, target_name, sizeof(target_name), tn_is_ml);
 	
-	if (target_count > 0)
+	if ((target_count = ProcessTargetString(
+		arg,
+		client, 
+		target_list, 
+		MAXPLAYERS, 
+		0,
+		target_name,
+		sizeof(target_name),
+		tn_is_ml)) <= 0)
 	{
+		ReplyToTargetError(client, target_count);
+		return Plugin_Handled;
+	}
+
+	for (int i = 0, target = 0; i < target_count; i++)
+	{
+		target = target_list[i];
+		
 		GetCmdArg(2, colour, sizeof(colour));
 		int colour_id = GetColour(colour);
 		
@@ -63,15 +78,10 @@ public Action CompColour(int client, any args)
 			return Plugin_Handled;
 		}
 		
-		int target = target_list[0];
-		
 		SetColour(target, colour_id);
 		ReplyToCommand(client, "%s The colour for %N has been set to: %s", MESSAGE_PREFIX, target, colour);
-		
-		return Plugin_Handled;
 	}
-
-	ReplyToTargetError(client, target_count);
+	
 	return Plugin_Handled;
 }
 
