@@ -20,6 +20,7 @@ enum colours
 bool loaded_player_colours = false;
 int player_colours[MAXPLAYERS + 1];
 char usage[] = "sm_compcolour <name> <yellow|purple|green|blue|orange|grey>";
+char usage_self[] = "sm_mycompcolour <yellow|purple|green|blue|orange|grey>";
 
 public Plugin myinfo =
 {
@@ -36,6 +37,8 @@ public void OnPluginStart()
 
 	RegAdminCmd("sm_compcolour", CompColour, ADMFLAG_GENERIC, usage);
 	RegAdminCmd("sm_cc", CompColour, ADMFLAG_GENERIC, usage);
+	RegConsoleCmd("sm_mycompcolour", MyCompColour, usage_self);
+	RegConsoleCmd("sm_mycc", MyCompColour, usage_self);
 }
 
 public void OnMapStart()
@@ -65,6 +68,33 @@ public void OnThinkPost(int entity)
 	}
 }
 
+public Action MyCompColour(int client, int args)
+{
+	if (args < 1)
+	{
+		ReplyToCommand(client, "%s Usage: %s", MESSAGE_PREFIX, usage);
+		
+		return Plugin_Handled;
+	}
+	
+	char colour[16];
+	GetCmdArg(1, colour, sizeof(colour));
+	int colour_id = GetColour(colour);
+	
+	if (!IsValidColour(colour_id))
+	{
+		ReplyToCommand(client, "%s Invalid colour.", MESSAGE_PREFIX);
+		ReplyToCommand(client, "%s Usage: %s", MESSAGE_PREFIX, usage_self);
+		
+		return Plugin_Handled;
+	}
+	
+	player_colours[client] = colour_id;
+	ReplyToCommand(client, "%s You have set your competitive colour to: %s", MESSAGE_PREFIX, colour);
+	
+	return Plugin_Handled;
+}
+
 public Action CompColour(int client, int args)
 {
 	if (args < 2)
@@ -74,7 +104,7 @@ public Action CompColour(int client, int args)
 		return Plugin_Handled;
 	}
 	
-	char arg[MAX_NAME_LENGTH], colour[32];
+	char arg[MAX_NAME_LENGTH], colour[16];
 	GetCmdArg(1, arg, sizeof(arg));
 	
 	char target_name[MAX_TARGET_LENGTH];
