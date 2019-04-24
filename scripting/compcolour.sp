@@ -1,5 +1,6 @@
 #include <sourcemod>
 #include <sdktools>
+#include <sdkhooks>
 
 #pragma semicolon 1
 #pragma newdecls required
@@ -15,8 +16,9 @@ enum colours
     BLUE = 3,
     ORANGE = 4,
 }
-
-char usage[] = "sm_compcolour <#userid|name> <yellow|purple|green|blue|orange|grey>";
+bool loaded_player_colours = false;
+int player_colours[MAXPLAYERS + 1];
+char usage[] = "sm_compcolour <name> <yellow|purple|green|blue|orange|grey>";
 
 public Plugin myinfo =
 {
@@ -34,7 +36,34 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_compcolour", CompColour, usage);
 }
 
-public Action CompColour(int client, any args)
+public void OnMapStart()
+{
+	int playerManager = GetPlayerResourceEntity();
+	if (playerManager == -1)
+	{
+		SetFailState("Unable to find cs_player_manager entity");
+	}
+	
+	SDKHook(playerManager, SDKHook_ThinkPost, OnThinkPost);
+}
+
+public void OnThinkPost(int entity)
+{
+	int offset = FindSendPropInfo("CCSPlayerResource", "m_iCompTeammateColor");
+	
+	if (!loaded_player_colours)
+	{
+		GetEntDataArray(entity, offset, player_colours, MAXPLAYERS + 1);
+		loaded_player_colours = true;
+	}
+	
+	if (offset > 0)
+	{
+		SetEntDataArray(entity, offset, player_colours, MAXPLAYERS + 1, _, true);
+	}
+}
+
+public Action CompColour(int client, int args)
 {
 	if (args < 1)
 	{
@@ -44,56 +73,51 @@ public Action CompColour(int client, any args)
 	}
 	
 	char arg[MAX_NAME_LENGTH], colour[32];
+	GetCmdArg(1, arg, sizeof(arg));
 	
 	char target_name[MAX_TARGET_LENGTH];
 	int target_list[MAXPLAYERS], target_count;
 	bool tn_is_ml;
 	
 	if ((target_count = ProcessTargetString(
-		arg,
-		client, 
-		target_list, 
-		MAXPLAYERS, 
-		0,
-		target_name,
-		sizeof(target_name),
-		tn_is_ml)) <= 0)
+			arg,
+			client, 
+			target_list, 
+			MAXPLAYERS, 
+			COMMAND_FILTER_NO_IMMUNITY,
+			target_name,
+			sizeof(target_name),
+			tn_is_ml)) <= 0)
 	{
-		ReplyToTargetError(client, target_count);
+		ReplyToTargetError(client, COMMAND_TARGET_NONE);	
 		return Plugin_Handled;
 	}
 
-	for (int i = 0, target = 0; i < target_count; i++)
+	for (int i = 0; i < target_count; i++)
 	{
-		target = target_list[i];
+		int target = target_list[i];
 		
 		GetCmdArg(2, colour, sizeof(colour));
 		int colour_id = GetColour(colour);
 		
 		if (!IsValidColour(colour_id))
 		{
-			PrintToChat(client, "%s Invalid colour.", MESSAGE_PREFIX);
+			ReplyToCommand(client, "%s Invalid colour.", MESSAGE_PREFIX);
 			ReplyToCommand(client, "%s Usage: %s", MESSAGE_PREFIX, usage);
 			
 			return Plugin_Handled;
 		}
 		
 		SetColour(target, colour_id);
-		ReplyToCommand(client, "%s The colour for %N has been set to: %s", MESSAGE_PREFIX, target, colour);
+		ReplyToCommand(client, "%s The competative colour for %N has been set to: %s", MESSAGE_PREFIX, target, colour);
 	}
 	
 	return Plugin_Handled;
 }
 
-bool SetColour(int client, int colour_id)
+stock bool SetColour(int client, int colour_id)
 {
-	int playerManager = FindEntityByClassname(INVALID_ENT_REFERENCE, "cs_player_manager");
-	if (playerManager == INVALID_ENT_REFERENCE)
-	{
-		return false;
-	}
-	
-	SetEntProp(playerManager, Prop_Data, "m_iCompTeammateColor", colour_id, 4, client);
+	player_colours[client] = colour_id;
 	return true;
 }
 
