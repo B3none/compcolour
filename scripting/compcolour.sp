@@ -33,7 +33,8 @@ public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 
-	RegConsoleCmd("sm_compcolour", CompColour, usage);
+	RegAdminCmd("sm_compcolour", CompColour, ADMFLAG_GENERIC, usage);
+	RegAdminCmd("sm_cc", CompColour, ADMFLAG_GENERIC, usage);
 }
 
 public void OnMapStart()
@@ -65,7 +66,7 @@ public void OnThinkPost(int entity)
 
 public Action CompColour(int client, int args)
 {
-	if (args < 1)
+	if (args < 2)
 	{
 		ReplyToCommand(client, "%s Usage: %s", MESSAGE_PREFIX, usage);
 		
@@ -76,18 +77,11 @@ public Action CompColour(int client, int args)
 	GetCmdArg(1, arg, sizeof(arg));
 	
 	char target_name[MAX_TARGET_LENGTH];
-	int target_list[MAXPLAYERS], target_count;
+	int target_list[MAXPLAYERS];
 	bool tn_is_ml;
+	int target_count = ProcessTargetString(arg, client, target_list, MAXPLAYERS, COMMAND_FILTER_NO_IMMUNITY, target_name, sizeof(target_name), tn_is_ml);
 	
-	if ((target_count = ProcessTargetString(
-			arg,
-			client, 
-			target_list, 
-			MAXPLAYERS, 
-			COMMAND_FILTER_NO_IMMUNITY,
-			target_name,
-			sizeof(target_name),
-			tn_is_ml)) <= 0)
+	if (target_count <= 0)
 	{
 		ReplyToTargetError(client, COMMAND_TARGET_NONE);	
 		return Plugin_Handled;
